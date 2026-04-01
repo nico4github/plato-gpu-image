@@ -25,5 +25,6 @@ build/
 output/
 tests/output_file/*.hdf5
 tests/output_file/*.log
+tests/output_file/*.pgm
 tests/output_file/local__perf_*.json
 tests/output_file/local__perf_*.yaml

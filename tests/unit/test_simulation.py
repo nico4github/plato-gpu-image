@@ -16,6 +16,11 @@ def _fixture(name: str) -> Path:
     return repo_root / "tests" / "input_yaml" / name
 
 
+def _input_file(name: str) -> Path:
+    repo_root = Path(__file__).resolve().parents[2]
+    return repo_root / "tests" / "input_file" / name
+
+
 def test_simulation_run_returns_backend_status() -> None:
     sim = Simulation(backend="numpy")
     payload = sim.run()
@@ -150,12 +155,7 @@ def test_simulation_photon_noise_is_deterministic_from_seed(tmp_path: Path) -> N
 
 
 def test_simulation_renders_star_catalog_signal(tmp_path: Path) -> None:
-    star_catalog = tmp_path / "stars.txt"
-    star_catalog.write_text(
-        "0.0 0.0 10.0\n"
-        "1.0 1.0 12.0\n",
-        encoding="utf-8",
-    )
+    star_catalog = _input_file("star_catalog_small.txt")
     config = {
         "ObservingParameters": {
             "NumExposures": 1,
@@ -180,12 +180,7 @@ def test_simulation_renders_star_catalog_signal(tmp_path: Path) -> None:
 
 
 def test_simulation_star_magnitude_affects_flux(tmp_path: Path) -> None:
-    star_catalog = tmp_path / "stars_mag.txt"
-    star_catalog.write_text(
-        "0.0 0.0 9.0\n"   # brighter
-        "1.0 1.0 13.0\n",  # dimmer
-        encoding="utf-8",
-    )
+    star_catalog = _input_file("star_catalog_mag.txt")
     config = {
         "ObservingParameters": {
             "NumExposures": 1,

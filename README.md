@@ -181,6 +181,7 @@ pip install -e .[cuda]
   - `scripts/preview_hdf5_side_by_side.py` prints side-by-side previews of key legacy vs local datasets (shape + stats).
 - Test fixture layout:
   - input YAML fixtures live in `tests/input_yaml/`,
+  - input catalog fixtures live in `tests/input_file/`,
   - generated test outputs are targeted to `tests/output_file/`,
   - output filenames are tagged with `legacy__...` or `local__...`.
 - Optional legacy parity runner:
@@ -191,6 +192,9 @@ pip install -e .[cuda]
   - `tests/perf/test_perf_legacy_vs_local.py` measures legacy vs local runtime on a lightweight shared config.
   - included in pytest by default when legacy binary is available (set `RUN_LEGACY_PERF=0` to disable).
   - writes `tests/output_file/local__perf_report.json`.
+  - generates visual previews:
+    - `tests/output_file/legacy__perf_preview.pgm`
+    - `tests/output_file/local__perf_preview.pgm`
   - pytest terminal summary shows `legacy_seconds`, `local_seconds`, and `local/legacy speedup`.
 
 Quick side-by-side preview example:

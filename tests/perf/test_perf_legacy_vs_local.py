@@ -6,6 +6,8 @@ import subprocess
 import time
 from pathlib import Path
 
+import h5py
+import numpy as np
 import pytest
 import yaml
 
@@ -41,6 +43,33 @@ def _prepare_perf_config() -> Path:
     return config_path
 
 
+def _write_pgm_preview(
+    hdf5_path: Path, dataset_path: str, output_pgm: Path, *, percentile: float = 99.5
+) -> None:
+    with h5py.File(hdf5_path, "r") as handle:
+        if dataset_path not in handle:
+            raise KeyError(f"Dataset not found in HDF5: {dataset_path}")
+        image = np.asarray(handle[dataset_path][()], dtype=np.float32)
+
+    if image.ndim != 2:
+        raise ValueError(f"Expected 2D dataset for preview, got shape {image.shape}")
+
+    image = np.nan_to_num(image, nan=0.0, posinf=0.0, neginf=0.0)
+    lo = float(np.min(image))
+    hi = float(np.percentile(image, percentile))
+    if hi <= lo:
+        scaled = np.zeros_like(image, dtype=np.uint8)
+    else:
+        clipped = np.clip(image, lo, hi)
+        scaled = ((clipped - lo) / (hi - lo) * 255.0).astype(np.uint8)
+
+    output_pgm.parent.mkdir(parents=True, exist_ok=True)
+    with output_pgm.open("wb") as handle:
+        header = f"P5\n{scaled.shape[1]} {scaled.shape[0]}\n255\n"
+        handle.write(header.encode("ascii"))
+        handle.write(scaled.tobytes())
+
+
 @pytest.mark.skipif(
     os.environ.get("RUN_LEGACY_PERF", "1") != "1",
     reason="Set RUN_LEGACY_PERF=1 to enable legacy/local perf benchmark",
@@ -55,8 +84,10 @@ def test_perf_legacy_vs_local_smoke() -> None:
     legacy_log = tagged_output_file("legacy", "perf_smoke.log")
     local_output = tagged_output_file("local", "perf_smoke.hdf5")
     report_path = tagged_output_file("local", "perf_report.json")
+    legacy_preview = tagged_output_file("legacy", "perf_preview.pgm")
+    local_preview = tagged_output_file("local", "perf_preview.pgm")
 
-    for artifact in (legacy_output, legacy_log, local_output, report_path):
+    for artifact in (legacy_output, legacy_log, local_output, report_path, legacy_preview, local_preview):
         if artifact.exists():
             artifact.unlink()
 
@@ -88,6 +119,9 @@ def test_perf_legacy_vs_local_smoke() -> None:
     assert legacy_output.exists()
     assert local_output.exists()
 
+    _write_pgm_preview(legacy_output, "/Images/image0000000", legacy_preview)
+    _write_pgm_preview(local_output, "/Images/image0000000", local_preview)
+
     speedup_local_over_legacy = (
         (legacy_seconds / local_seconds) if local_seconds > 0 else float("inf")
     )
@@ -99,6 +133,8 @@ def test_perf_legacy_vs_local_smoke() -> None:
         "speedup_local_over_legacy": speedup_local_over_legacy,
         "legacy_output": str(legacy_output),
         "local_output": str(local_output),
+        "legacy_preview": str(legacy_preview),
+        "local_preview": str(local_preview),
     }
     report_path.write_text(json.dumps(report, indent=2, sort_keys=True), encoding="utf-8")
 

@@ -33,8 +33,14 @@ def pytest_terminal_summary(terminalreporter, exitstatus, config) -> None:
         legacy_s = payload.get("legacy_seconds")
         local_s = payload.get("local_seconds")
         speedup = payload.get("speedup_local_over_legacy")
+        legacy_preview = payload.get("legacy_preview")
+        local_preview = payload.get("local_preview")
         terminalreporter.write_line(f"{benchmark}:")
         terminalreporter.write_line(f"  legacy_seconds = {legacy_s:.4f}")
         terminalreporter.write_line(f"  local_seconds  = {local_s:.4f}")
         terminalreporter.write_line(f"  local/legacy speedup = {speedup:.4f}x")
+        if legacy_preview:
+            terminalreporter.write_line(f"  legacy_preview = {legacy_preview}")
+        if local_preview:
+            terminalreporter.write_line(f"  local_preview  = {local_preview}")
         terminalreporter.write_line(f"  report = {report}")
