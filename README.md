@@ -177,6 +177,7 @@ pip install -e .[cuda]
 - Validation tooling:
   - `scripts/validate_legacy_config.py` validates legacy YAML files against the core compatibility contract.
   - `scripts/compare_hdf5_structure.py` compares group/dataset structure between two HDF5 files.
+  - `scripts/preview_hdf5_side_by_side.py` prints side-by-side previews of key legacy vs local datasets (shape + stats).
 - Test fixture layout:
   - input YAML fixtures live in `tests/input_yaml/`,
   - generated test outputs are targeted to `tests/output_file/`,
@@ -185,6 +186,15 @@ pip install -e .[cuda]
   - `tests/parity/test_legacy_binary_runner.py` can execute the local `PlatoSim3/build/platosim` binary,
   - `tests/parity/test_structure_parity.py` compares baseline HDF5 group overlap between legacy and Python outputs,
   - enable with `RUN_LEGACY_PARITY=1` for integration-level checks.
+
+Quick side-by-side preview example:
+
+```bash
+python scripts/preview_hdf5_side_by_side.py \
+  --legacy tests/output_file/legacy__structure_parity.hdf5 \
+  --local tests/output_file/local__structure_parity.hdf5 \
+  --image-index 0
+```
 
 ## Deferred GPU Validation Checklist
 
