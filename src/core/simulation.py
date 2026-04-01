@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
+import yaml
 
 from backends import backend_array_namespace, resolve_backend
 from config.compatibility import load_core_compatible_yaml, load_legacy_yaml
@@ -84,6 +85,11 @@ class Simulation:
                 }
             )
             if self.config is not None:
+                writer.write_string_dataset(
+                    "/InputParameters",
+                    "rawConfigYAML",
+                    yaml.safe_dump(self.config, sort_keys=True),
+                )
                 self._write_exposure_images(writer)
             output_file = str(Path(self.output_path))
 
@@ -117,6 +123,14 @@ class Simulation:
 
         xp = self.array_namespace()
         rng = self._rng(config)
+        self._write_vector_outputs(
+            writer=writer,
+            config=config,
+            num_exposures=num_exposures,
+            begin_exposure=begin_exposure,
+            num_rows=num_rows,
+            num_cols=num_cols,
+        )
 
         # ACS vectors (written once for full run)
         if bool(self._cfg(config, "ControlHDF5Content/WriteACS", default=True)):
@@ -170,6 +184,84 @@ class Simulation:
                     throughput,
                     overwrite=True,
                 )
+
+    def _write_vector_outputs(
+        self,
+        *,
+        writer: HDF5Writer,
+        config: dict[str, Any],
+        num_exposures: int,
+        begin_exposure: int,
+        num_rows: int,
+        num_cols: int,
+    ) -> None:
+        cycle_time = float(self._cfg(config, "ObservingParameters/CycleTime", default=1.0))
+        time = np.arange(
+            begin_exposure * cycle_time,
+            (begin_exposure + num_exposures) * cycle_time,
+            cycle_time,
+            dtype=np.float64,
+        )
+        if time.size > num_exposures:
+            time = time[:num_exposures]
+
+        if bool(self._cfg(config, "ControlHDF5Content/WriteTransmissionEfficiency", default=True)):
+            trans_bol = float(
+                self._cfg(config, "Telescope/TransmissionEfficiency/BOL", default=1.0)
+            )
+            trans_vec = np.full(num_exposures, trans_bol, dtype=np.float32)
+            writer.write_dataset(
+                "/TransmissionEfficiency",
+                "transmissionEfficiency",
+                trans_vec,
+                overwrite=True,
+            )
+
+        if bool(self._cfg(config, "ControlHDF5Content/WriteBackgroundMap", default=True)):
+            bg_raw = float(self._cfg(config, "Sky/SkyBackground/BackgroundValue", default=0.0))
+            if bg_raw < 0:
+                bg_raw = 0.0
+            bg_vec = np.full(num_exposures, bg_raw, dtype=np.float32)
+            writer.write_dataset("/BackgroundMap", "skyBackground", bg_vec, overwrite=True)
+
+        if bool(self._cfg(config, "ControlHDF5Content/WriteFlatfieldMap", default=True)):
+            prnu = np.ones((num_rows, num_cols), dtype=np.float32)
+            writer.write_dataset("/Flatfield", "PRNU", prnu, overwrite=True)
+
+        if bool(self._cfg(config, "ControlHDF5Content/WriteTelescopeACS", default=True)):
+            ra = float(self._cfg(config, "Platform/Orientation/Angles/RAPointing", default=0.0))
+            dec = float(self._cfg(config, "Platform/Orientation/Angles/DecPointing", default=0.0))
+            writer.write_dataset("/Telescope", "time", time, overwrite=True)
+            writer.write_dataset(
+                "/Telescope",
+                "telescopeYaw",
+                np.zeros(num_exposures, dtype=np.float32),
+                overwrite=True,
+            )
+            writer.write_dataset(
+                "/Telescope",
+                "telescopePitch",
+                np.zeros(num_exposures, dtype=np.float32),
+                overwrite=True,
+            )
+            writer.write_dataset(
+                "/Telescope",
+                "telescopeRoll",
+                np.zeros(num_exposures, dtype=np.float32),
+                overwrite=True,
+            )
+            writer.write_dataset(
+                "/Telescope",
+                "telescopeRA",
+                np.full(num_exposures, ra, dtype=np.float32),
+                overwrite=True,
+            )
+            writer.write_dataset(
+                "/Telescope",
+                "telescopeDec",
+                np.full(num_exposures, dec, dtype=np.float32),
+                overwrite=True,
+            )
 
     def _background_level(self, config: dict[str, Any]) -> float:
         use_constant = bool(

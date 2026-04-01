@@ -24,6 +24,9 @@ LEGACY_OUTPUT_GROUPS: tuple[str, ...] = (
     "/ThroughputMaps",
     "/TransmissionEfficiency",
     "/BackgroundMap",
+    "/Telescope",
+    "/CTI",
+    "/Version",
 )
 
 
@@ -79,6 +82,26 @@ class HDF5Writer:
                     )
                 del group[dataset_name]
             group.create_dataset(dataset_name, data=self._to_numpy(data))
+
+    def write_string_dataset(
+        self,
+        group_path: str,
+        dataset_name: str,
+        value: str,
+        *,
+        overwrite: bool = True,
+    ) -> None:
+        """Write a scalar UTF-8 string dataset."""
+        with h5py.File(self.output_path, "a") as handle:
+            group = handle.require_group(group_path)
+            if dataset_name in group:
+                if not overwrite:
+                    raise FileExistsError(
+                        f"Dataset already exists: {group_path}/{dataset_name}"
+                    )
+                del group[dataset_name]
+            dtype = h5py.string_dtype(encoding="utf-8")
+            group.create_dataset(dataset_name, data=value, dtype=dtype)
 
     @staticmethod
     def _to_numpy(data: Any) -> np.ndarray:

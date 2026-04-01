@@ -65,12 +65,18 @@ def test_simulation_writes_images_for_configured_exposures(tmp_path: Path) -> No
     sim.run()
 
     with h5py.File(output, "r") as handle:
+        assert "rawConfigYAML" in handle["InputParameters"]
         assert "image0000005" in handle["Images"]
         assert "image0000006" in handle["Images"]
         assert "smearingMap0000005" in handle["SmearingMaps"]
         assert "biasMap0000005" in handle["BiasMapsLeft"]
         assert "biasMap0000005" in handle["BiasMapsRight"]
         assert "throughputMap0000005" in handle["ThroughputMaps"]
+        assert "transmissionEfficiency" in handle["TransmissionEfficiency"]
+        assert "skyBackground" in handle["BackgroundMap"]
+        assert "PRNU" in handle["Flatfield"]
+        assert "time" in handle["Telescope"]
+        assert "telescopeRA" in handle["Telescope"]
         image = handle["Images"]["image0000005"][:]
         assert image.shape == (4, 3)
         # background * cycle time => 2 * 10
@@ -78,11 +84,19 @@ def test_simulation_writes_images_for_configured_exposures(tmp_path: Path) -> No
         assert handle["SmearingMaps"]["smearingMap0000005"][:].shape == (30, 3)
         assert handle["BiasMapsLeft"]["biasMap0000005"][:].shape == (25, 15)
         assert handle["ThroughputMaps"]["throughputMap0000005"][:].shape == (4, 3)
+        assert handle["TransmissionEfficiency"]["transmissionEfficiency"][:].shape == (2,)
+        assert handle["BackgroundMap"]["skyBackground"][:].shape == (2,)
+        assert handle["Flatfield"]["PRNU"][:].shape == (4, 3)
+        assert handle["Telescope"]["time"][:].shape == (2,)
 
         assert "time" in handle["ACS"]
         assert "yaw" in handle["ACS"]
         assert handle["ACS"]["time"][:].shape == (2,)
         assert handle["ACS"]["platformRA"][:].shape == (2,)
+        raw_yaml = handle["InputParameters"]["rawConfigYAML"][()]
+        if isinstance(raw_yaml, bytes):
+            raw_yaml = raw_yaml.decode("utf-8")
+        assert "ObservingParameters:" in raw_yaml
 
 
 def test_simulation_skips_images_when_writepixelmaps_false(tmp_path: Path) -> None:

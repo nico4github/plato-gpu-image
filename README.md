@@ -171,6 +171,7 @@ pip install -e .[cuda]
 - Simulation integration scaffold:
   - `Simulation.run()` can now initialize a legacy-layout HDF5 output file,
   - backend and run metadata are written at file root,
+  - a full input snapshot is stored as `/InputParameters/rawConfigYAML`,
   - `Simulation.from_legacy_yaml(...)` loads validated legacy configs directly.
 - Automated tests currently pass on CPU-only environment.
 - Validation tooling:
