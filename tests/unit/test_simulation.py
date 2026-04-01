@@ -147,3 +147,65 @@ def test_simulation_photon_noise_is_deterministic_from_seed(tmp_path: Path) -> N
     rng = np.random.default_rng(7)
     expected = rng.poisson(10.0, size=(2, 3)).astype(np.float32)
     assert np.array_equal(observed, expected)
+
+
+def test_simulation_renders_star_catalog_signal(tmp_path: Path) -> None:
+    star_catalog = tmp_path / "stars.txt"
+    star_catalog.write_text(
+        "0.0 0.0 10.0\n"
+        "1.0 1.0 12.0\n",
+        encoding="utf-8",
+    )
+    config = {
+        "ObservingParameters": {
+            "NumExposures": 1,
+            "BeginExposureNr": 0,
+            "CycleTime": 1.0,
+            "Fluxm0": 1.0e8,
+            "StarCatalogFile": str(star_catalog),
+        },
+        "SubField": {"NumRows": 8, "NumColumns": 8},
+        "Sky": {"SkyBackground": {"UseConstantSkyBackground": True, "BackgroundValue": 0.0}},
+        "ControlHDF5Content": {"WritePixelMaps": True},
+    }
+    output = tmp_path / "stars.hdf5"
+    sim = Simulation(config=config, output_path=output)
+    sim.run()
+
+    with h5py.File(output, "r") as handle:
+        image = handle["Images"]["image0000000"][:]
+
+    assert float(np.max(image)) > 0.0
+    assert float(np.std(image)) > 0.0
+
+
+def test_simulation_star_magnitude_affects_flux(tmp_path: Path) -> None:
+    star_catalog = tmp_path / "stars_mag.txt"
+    star_catalog.write_text(
+        "0.0 0.0 9.0\n"   # brighter
+        "1.0 1.0 13.0\n",  # dimmer
+        encoding="utf-8",
+    )
+    config = {
+        "ObservingParameters": {
+            "NumExposures": 1,
+            "BeginExposureNr": 0,
+            "CycleTime": 1.0,
+            "Fluxm0": 1.0e8,
+            "StarCatalogFile": str(star_catalog),
+        },
+        "SubField": {"NumRows": 8, "NumColumns": 8},
+        "Sky": {"SkyBackground": {"UseConstantSkyBackground": True, "BackgroundValue": 0.0}},
+        "ControlHDF5Content": {"WritePixelMaps": True},
+    }
+    output = tmp_path / "stars_mag.hdf5"
+    sim = Simulation(config=config, output_path=output)
+    sim.run()
+
+    with h5py.File(output, "r") as handle:
+        image = handle["Images"]["image0000000"][:]
+
+    # Bright source maps near one corner; dimmer source near opposite corner.
+    bright_region = float(np.sum(image[:4, :4]))
+    dim_region = float(np.sum(image[4:, 4:]))
+    assert bright_region > dim_region

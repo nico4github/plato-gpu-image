@@ -172,7 +172,8 @@ pip install -e .[cuda]
   - `Simulation.run()` can now initialize a legacy-layout HDF5 output file,
   - backend and run metadata are written at file root,
   - a full input snapshot is stored as `/InputParameters/rawConfigYAML`,
-  - `Simulation.from_legacy_yaml(...)` loads validated legacy configs directly.
+  - `Simulation.from_legacy_yaml(...)` loads validated legacy configs directly,
+  - initial star-catalog signal deposition is rendered into `/Images/imageXXXXXXX`.
 - Automated tests currently pass on CPU-only environment.
 - Validation tooling:
   - `scripts/validate_legacy_config.py` validates legacy YAML files against the core compatibility contract.

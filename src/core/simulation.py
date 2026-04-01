@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import os
 from pathlib import Path
 from typing import Any
 
@@ -32,6 +33,7 @@ class Simulation:
 
     backend: str = "numpy"
     config: dict[str, Any] | None = None
+    config_source_path: str | Path | None = None
     output_path: str | Path | None = None
     overwrite_output: bool = True
 
@@ -53,6 +55,7 @@ class Simulation:
         return cls(
             backend=backend,
             config=config,
+            config_source_path=config_path,
             output_path=output_path,
             overwrite_output=overwrite_output,
         )
@@ -153,6 +156,7 @@ class Simulation:
                 self._background_level(config),
                 dtype=xp.float32,
             )
+            image = self._inject_star_catalog(image, config)
             image *= throughput_level
             image = self._apply_noise_terms(image, config, rng)
 
@@ -184,6 +188,129 @@ class Simulation:
                     throughput,
                     overwrite=True,
                 )
+
+    def _inject_star_catalog(self, image: Any, config: dict[str, Any]) -> Any:
+        """Inject synthetic star signal from configured star catalog.
+
+        This is an initial implementation to render meaningful content:
+        - reads (RA, Dec, mag) triplets from StarCatalogFile
+        - projects stars to subfield using catalog min/max normalization
+        - applies a compact 3x3 Gaussian-like kernel per source
+        """
+        star_path = self._resolve_star_catalog_path(config)
+        if star_path is None or not star_path.exists():
+            return image
+
+        stars = self._read_star_catalog(star_path)
+        if stars.size == 0:
+            return image
+
+        xp = self.array_namespace()
+        np_image = np.asarray(image.get() if hasattr(image, "get") else image, dtype=np.float32)
+        nrows, ncols = np_image.shape
+
+        ra = stars[:, 0]
+        dec = stars[:, 1]
+        mag = stars[:, 2]
+
+        ra_span = max(float(np.max(ra) - np.min(ra)), 1e-9)
+        dec_span = max(float(np.max(dec) - np.min(dec)), 1e-9)
+
+        col = np.clip(((ra - np.min(ra)) / ra_span * (ncols - 1)).astype(int), 0, ncols - 1)
+        row = np.clip(((dec - np.min(dec)) / dec_span * (nrows - 1)).astype(int), 0, nrows - 1)
+
+        flux = self._star_flux_from_magnitude(config, mag)
+
+        # Compact PSF-like kernel (normalized).
+        kernel = np.array(
+            [
+                [0.075, 0.123, 0.075],
+                [0.123, 0.208, 0.123],
+                [0.075, 0.123, 0.075],
+            ],
+            dtype=np.float32,
+        )
+        kernel /= float(np.sum(kernel))
+
+        for r, c, f in zip(row, col, flux):
+            if f <= 0:
+                continue
+            for kr in range(-1, 2):
+                rr = int(r + kr)
+                if rr < 0 or rr >= nrows:
+                    continue
+                for kc in range(-1, 2):
+                    cc = int(c + kc)
+                    if cc < 0 or cc >= ncols:
+                        continue
+                    np_image[rr, cc] += np.float32(f * kernel[kr + 1, kc + 1])
+
+        return xp.asarray(np_image, dtype=xp.float32)
+
+    def _star_flux_from_magnitude(self, config: dict[str, Any], mag: np.ndarray) -> np.ndarray:
+        flux_m0 = float(self._cfg(config, "ObservingParameters/Fluxm0", default=1.0e8))
+        cycle_time = float(self._cfg(config, "ObservingParameters/CycleTime", default=1.0))
+
+        # Scaled physical-like relation to keep values numerically stable.
+        # Relative to a reference 10th magnitude source.
+        ref_mag = 10.0
+        base = flux_m0 * cycle_time * 1e-8
+        rel = np.power(10.0, -0.4 * (mag - ref_mag), dtype=np.float64)
+        flux = base * rel
+        return np.clip(flux.astype(np.float32), 0.0, 1e7)
+
+    def _resolve_star_catalog_path(self, config: dict[str, Any]) -> Path | None:
+        raw = self._cfg(config, "ObservingParameters/StarCatalogFile", default=None)
+        if raw is None:
+            return None
+
+        candidate = Path(str(raw))
+        if candidate.is_absolute():
+            return candidate
+
+        roots: list[Path] = []
+
+        # Legacy ENV convention.
+        project_home = os.environ.get("PLATO_PROJECT_HOME")
+        if project_home:
+            roots.append(Path(project_home))
+
+        # Relative to config file location.
+        if self.config_source_path is not None:
+            source = Path(self.config_source_path).resolve()
+            roots.append(source.parent)
+
+        # Relative to repository root.
+        roots.append(Path.cwd())
+
+        for root in roots:
+            resolved = (root / candidate).resolve()
+            if resolved.exists():
+                return resolved
+        return candidate
+
+    @staticmethod
+    def _read_star_catalog(path: Path) -> np.ndarray:
+        rows: list[tuple[float, float, float]] = []
+        with path.open("r", encoding="utf-8") as handle:
+            for line in handle:
+                stripped = line.strip()
+                if not stripped or stripped.startswith("#"):
+                    continue
+                parts = stripped.split()
+                if len(parts) < 3:
+                    continue
+                try:
+                    ra = float(parts[0])
+                    dec = float(parts[1])
+                    mag = float(parts[2])
+                except ValueError:
+                    continue
+                rows.append((ra, dec, mag))
+
+        if not rows:
+            return np.empty((0, 3), dtype=np.float32)
+        return np.asarray(rows, dtype=np.float32)
 
     def _write_vector_outputs(
         self,
