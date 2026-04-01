@@ -152,6 +152,7 @@ pip install -e .[cuda]
   - `scripts/validate_legacy_config.py` validates legacy YAML files against the core compatibility contract.
 - Optional legacy parity runner:
   - `tests/parity/test_legacy_binary_runner.py` can execute the local `PlatoSim3/build/platosim` binary,
+  - `tests/parity/test_structure_parity.py` compares baseline HDF5 group overlap between legacy and Python outputs,
   - enable with `RUN_LEGACY_PARITY=1` for integration-level checks.
 
 ## Deferred GPU Validation Checklist
