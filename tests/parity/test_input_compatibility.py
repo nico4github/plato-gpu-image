@@ -14,6 +14,11 @@ from config.compatibility import (
 )
 
 
+def _fixture(name: str) -> Path:
+    repo_root = Path(__file__).resolve().parents[2]
+    return repo_root / "tests" / "input_yaml" / name
+
+
 def test_legacy_yaml_top_level_mapping(tmp_path: Path) -> None:
     config_file = tmp_path / "input.yaml"
     config_file.write_text(
@@ -35,19 +40,7 @@ def test_missing_required_top_level_section_raises(tmp_path: Path) -> None:
 
 
 def test_alias_normalization_ra_dec_pointing(tmp_path: Path) -> None:
-    config_file = tmp_path / "legacy_alias.yaml"
-    config_file.write_text(
-        "General: {}\n"
-        "ObservingParameters:\n"
-        "  NumExposures: 10\n"
-        "  RApointing: 12.5\n"
-        "  DecPointing: -4.0\n"
-        "Sky: {}\nPlatform:\n  Orientation:\n    Source: Angles\n"
-        "Telescope: {}\nCamera: {}\nPSF: {}\nFEE: {}\nCCD: {}\nSubField: {}\n"
-        "RandomSeeds: {}\nControlHDF5Content: {}\n",
-        encoding="utf-8",
-    )
-    data = load_legacy_yaml(config_file)
+    data = load_legacy_yaml(_fixture("legacy_alias_ra_dec.yaml"))
     assert data["Platform"]["Orientation"]["Angles"]["RAPointing"] == 12.5
     assert data["Platform"]["Orientation"]["Angles"]["DecPointing"] == -4.0
 

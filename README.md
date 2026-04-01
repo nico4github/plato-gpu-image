@@ -2,6 +2,33 @@
 
 Standalone repository for a pure-Python implementation of PlatoSim with optional GPU acceleration.
 
+## TL;DR Run A Simulation
+
+Use a legacy PlatoSim YAML input file directly from the command line:
+
+```bash
+source .venv/bin/activate
+chmod +x ./plato-gpu-image.py
+./plato-gpu-image.py \
+  --input ../platosim_develop/PlatoSim3/inputfiles/inputfile.yaml \
+  --output output/sim_run.hdf5 \
+  --backend numpy \
+  --strict-core-contract \
+  --no-overwrite-output
+```
+
+If your shell blocks direct execution, run the same CLI via Python:
+
+```bash
+python plato-gpu-image.py --input ../platosim_develop/PlatoSim3/inputfiles/inputfile.yaml --output output/sim_run.hdf5 --backend numpy --strict-core-contract --no-overwrite-output
+```
+
+Optional pre-check for input compatibility:
+
+```bash
+python scripts/validate_legacy_config.py ../platosim_develop/PlatoSim3/inputfiles/inputfile.yaml
+```
+
 ## Why This Repo Exists
 
 This project is intentionally separated from the existing `PlatoSim3` repository to:
@@ -119,33 +146,6 @@ With CUDA (optional):
 pip install -e .[cuda]
 ```
 
-## TL;DR Run A Simulation
-
-Use a legacy PlatoSim YAML input file directly from the command line:
-
-```bash
-source .venv/bin/activate
-chmod +x ./plato-gpu-image.py
-./plato-gpu-image.py \
-  --input ../platosim_develop/PlatoSim3/inputfiles/inputfile.yaml \
-  --output output/sim_run.hdf5 \
-  --backend numpy \
-  --strict-core-contract \
-  --no-overwrite-output
-```
-
-If your shell blocks direct execution, run the same CLI via Python:
-
-```bash
-python plato-gpu-image.py --input ../platosim_develop/PlatoSim3/inputfiles/inputfile.yaml --output output/sim_run.hdf5 --backend numpy --strict-core-contract --no-overwrite-output
-```
-
-Optional pre-check for input compatibility:
-
-```bash
-python scripts/validate_legacy_config.py ../platosim_develop/PlatoSim3/inputfiles/inputfile.yaml
-```
-
 ## Next Implementation Milestones
 
 - Lock a v1 compatibility schema contract (required path inventory + defaults policy).
@@ -176,6 +176,10 @@ python scripts/validate_legacy_config.py ../platosim_develop/PlatoSim3/inputfile
 - Validation tooling:
   - `scripts/validate_legacy_config.py` validates legacy YAML files against the core compatibility contract.
   - `scripts/compare_hdf5_structure.py` compares group/dataset structure between two HDF5 files.
+- Test fixture layout:
+  - input YAML fixtures live in `tests/input_yaml/`,
+  - generated test outputs are targeted to `tests/output_file/`,
+  - output filenames are tagged with `legacy__...` or `local__...`.
 - Optional legacy parity runner:
   - `tests/parity/test_legacy_binary_runner.py` can execute the local `PlatoSim3/build/platosim` binary,
   - `tests/parity/test_structure_parity.py` compares baseline HDF5 group overlap between legacy and Python outputs,

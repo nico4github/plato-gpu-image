@@ -8,6 +8,8 @@ import h5py
 import pytest
 import yaml
 
+from tests.output_paths import tagged_output_file
+
 
 def _repo_root() -> Path:
     return Path(__file__).resolve().parents[2]
@@ -40,8 +42,12 @@ def test_legacy_binary_can_generate_output(tmp_path: Path) -> None:
     config["ObservingParameters"]["NumExposures"] = 1
 
     run_yaml = tmp_path / "legacy_run.yaml"
-    run_output = tmp_path / "legacy_run.hdf5"
-    run_log = tmp_path / "legacy_run.log"
+    run_output = tagged_output_file("legacy", "binary_runner.hdf5")
+    run_log = tagged_output_file("legacy", "binary_runner.log")
+    if run_output.exists():
+        run_output.unlink()
+    if run_log.exists():
+        run_log.unlink()
     run_yaml.write_text(yaml.safe_dump(config), encoding="utf-8")
 
     env = os.environ.copy()

@@ -1,0 +1,38 @@
+General:
+  ProjectLocation: ENV['PLATO_PROJECT_HOME']
+ObservingParameters:
+  NumExposures: 1
+  BeginExposureNr: 0
+  CycleTime: 1.0
+  StarCatalogFile: inputfiles/starcatalog.txt
+  RApointing: 12.5
+  DecPointing: -4.0
+Sky:
+  SkyBackground:
+    UseConstantSkyBackground: true
+Platform:
+  UseJitter: true
+  JitterSource: FromRedNoise
+  Orientation:
+    Source: Angles
+Telescope:
+  GroupID: Custom
+  UseDrift: false
+Camera:
+  PlateScale: 0.8333
+  IncludeFieldDistortion: true
+PSF:
+  Model: AnalyticNonGaussian
+FEE:
+  Temperature: Nominal
+CCD:
+  Position: Custom
+  NumRows: 4510
+  NumColumns: 4510
+SubField:
+  NumRows: 2
+  NumColumns: 2
+RandomSeeds:
+  ReadOutNoiseSeed: 1
+ControlHDF5Content:
+  WritePixelMaps: true

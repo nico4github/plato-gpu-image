@@ -20,3 +20,8 @@ build/
 
 # OS
 .DS_Store
+
+# Local simulation outputs
+output/
+tests/output_file/*.hdf5
+tests/output_file/*.log

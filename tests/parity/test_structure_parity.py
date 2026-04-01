@@ -10,6 +10,7 @@ import yaml
 
 from core.simulation import Simulation
 from simio.hdf5 import LEGACY_OUTPUT_GROUPS
+from tests.output_paths import tagged_output_file
 
 
 def _repo_root() -> Path:
@@ -42,9 +43,12 @@ def test_hdf5_structure_baseline_parity(tmp_path: Path) -> None:
     config["ObservingParameters"]["NumExposures"] = 1
 
     config_yaml = tmp_path / "run.yaml"
-    legacy_output = tmp_path / "legacy.hdf5"
-    legacy_log = tmp_path / "legacy.log"
-    py_output = tmp_path / "py.hdf5"
+    legacy_output = tagged_output_file("legacy", "structure_parity.hdf5")
+    legacy_log = tagged_output_file("legacy", "structure_parity.log")
+    py_output = tagged_output_file("local", "structure_parity.hdf5")
+    for path in (legacy_output, legacy_log, py_output):
+        if path.exists():
+            path.unlink()
     config_yaml.write_text(yaml.safe_dump(config), encoding="utf-8")
 
     env = os.environ.copy()
