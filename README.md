@@ -119,6 +119,33 @@ With CUDA (optional):
 pip install -e .[cuda]
 ```
 
+## TL;DR Run A Simulation
+
+Use a legacy PlatoSim YAML input file directly from the command line:
+
+```bash
+source .venv/bin/activate
+chmod +x ./plato-gpu-image.py
+./plato-gpu-image.py \
+  --input ../platosim_develop/PlatoSim3/inputfiles/inputfile.yaml \
+  --output output/sim_run.hdf5 \
+  --backend numpy \
+  --strict-core-contract \
+  --no-overwrite-output
+```
+
+If your shell blocks direct execution, run the same CLI via Python:
+
+```bash
+python plato-gpu-image.py --input ../platosim_develop/PlatoSim3/inputfiles/inputfile.yaml --output output/sim_run.hdf5 --backend numpy --strict-core-contract --no-overwrite-output
+```
+
+Optional pre-check for input compatibility:
+
+```bash
+python scripts/validate_legacy_config.py ../platosim_develop/PlatoSim3/inputfiles/inputfile.yaml
+```
+
 ## Next Implementation Milestones
 
 - Lock a v1 compatibility schema contract (required path inventory + defaults policy).
