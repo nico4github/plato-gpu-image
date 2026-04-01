@@ -136,7 +136,7 @@ pip install -e .[cuda]
   - slash-path utilities for schema and validation checks.
 - Backend framework implemented:
   - backend resolver (`numpy`/`cupy`),
-  - simulation skeleton now resolves backend and reports runtime selection.
+  - simulation skeleton now resolves backend, reports runtime selection, and exposes a deterministic v1 effect-order contract.
 - Benchmarks scaffold implemented:
   - `benchmarks/run_backend_benchmarks.py` runs local NumPy FFT smoke benchmarks now,
   - same CLI path reserved for future CuPy benchmarking on GPU hosts.
