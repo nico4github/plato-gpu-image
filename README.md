@@ -150,6 +150,9 @@ pip install -e .[cuda]
 - Automated tests currently pass on CPU-only environment.
 - Validation tooling:
   - `scripts/validate_legacy_config.py` validates legacy YAML files against the core compatibility contract.
+- Optional legacy parity runner:
+  - `tests/parity/test_legacy_binary_runner.py` can execute the local `PlatoSim3/build/platosim` binary,
+  - enable with `RUN_LEGACY_PARITY=1` for integration-level checks.
 
 ## Deferred GPU Validation Checklist
 
