@@ -40,6 +40,34 @@ LEGACY_ALIAS_PATHS: dict[str, str] = {
     "ObservingParameters/DecPointing": "Platform/Orientation/Angles/DecPointing",
 }
 
+# Core path contract for v1 compatibility checks.
+# This is intentionally smaller than the full schema and captures the minimum
+# configuration shape needed to begin deterministic simulation execution.
+CORE_REQUIRED_PATHS: tuple[str, ...] = (
+    "General/ProjectLocation",
+    "ObservingParameters/NumExposures",
+    "ObservingParameters/BeginExposureNr",
+    "ObservingParameters/CycleTime",
+    "ObservingParameters/StarCatalogFile",
+    "Sky/SkyBackground/UseConstantSkyBackground",
+    "Platform/UseJitter",
+    "Platform/JitterSource",
+    "Platform/Orientation/Source",
+    "Telescope/GroupID",
+    "Telescope/UseDrift",
+    "Camera/PlateScale",
+    "Camera/IncludeFieldDistortion",
+    "PSF/Model",
+    "FEE/Temperature",
+    "CCD/Position",
+    "CCD/NumRows",
+    "CCD/NumColumns",
+    "SubField/NumRows",
+    "SubField/NumColumns",
+    "RandomSeeds/ReadOutNoiseSeed",
+    "ControlHDF5Content/WritePixelMaps",
+)
+
 
 def load_legacy_yaml(
     path: str | Path,
@@ -72,6 +100,11 @@ def load_legacy_yaml(
         ensure_paths_exist(data, required_paths)
 
     return data
+
+
+def load_core_compatible_yaml(path: str | Path) -> dict[str, Any]:
+    """Load YAML and enforce the v1 core required-path contract."""
+    return load_legacy_yaml(path, required_paths=CORE_REQUIRED_PATHS)
 
 
 def flatten_paths(tree: dict[str, Any], *, leaves_only: bool = False) -> set[str]:

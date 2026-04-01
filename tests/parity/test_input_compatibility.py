@@ -5,9 +5,11 @@ from pathlib import Path
 import pytest
 
 from platosim_py.config.compatibility import (
+    CORE_REQUIRED_PATHS,
     ConfigCompatibilityError,
     flatten_paths,
     has_path,
+    load_core_compatible_yaml,
     load_legacy_yaml,
 )
 
@@ -85,3 +87,35 @@ def test_canonical_platosim3_input_parses_when_available() -> None:
     assert data["General"]["ProjectLocation"] == "ENV['PLATO_PROJECT_HOME']"
     assert has_path(data, "Platform/Orientation/Angles/RAPointing")
     assert has_path(data, "ControlHDF5Content/WritePixelMaps")
+
+
+def test_core_required_contract_smoke(tmp_path: Path) -> None:
+    config_file = tmp_path / "core.yaml"
+    config_file.write_text(
+        "General:\n  ProjectLocation: ENV['PLATO_PROJECT_HOME']\n"
+        "ObservingParameters:\n"
+        "  NumExposures: 10\n"
+        "  BeginExposureNr: 0\n"
+        "  CycleTime: 25\n"
+        "  StarCatalogFile: inputfiles/starcatalog.txt\n"
+        "Sky:\n  SkyBackground:\n    UseConstantSkyBackground: true\n"
+        "Platform:\n"
+        "  UseJitter: true\n"
+        "  JitterSource: FromRedNoise\n"
+        "  Orientation:\n    Source: Angles\n"
+        "Telescope:\n  GroupID: Custom\n  UseDrift: false\n"
+        "Camera:\n  PlateScale: 0.8333\n  IncludeFieldDistortion: true\n"
+        "PSF:\n  Model: AnalyticNonGaussian\n"
+        "FEE:\n  Temperature: Nominal\n"
+        "CCD:\n"
+        "  Position: Custom\n"
+        "  NumRows: 4510\n"
+        "  NumColumns: 4510\n"
+        "SubField:\n  NumRows: 100\n  NumColumns: 100\n"
+        "RandomSeeds:\n  ReadOutNoiseSeed: 1\n"
+        "ControlHDF5Content:\n  WritePixelMaps: true\n",
+        encoding="utf-8",
+    )
+    data = load_core_compatible_yaml(config_file)
+    for path in CORE_REQUIRED_PATHS:
+        assert has_path(data, path)
