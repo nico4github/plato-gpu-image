@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from platosim_py.backends import backend_array_namespace, resolve_backend
+from platosim_py.config.compatibility import load_core_compatible_yaml, load_legacy_yaml
 from platosim_py.io.hdf5 import HDF5Writer
 
 DEFAULT_EFFECT_ORDER: tuple[str, ...] = (
@@ -30,6 +31,28 @@ class Simulation:
     config: dict[str, Any] | None = None
     output_path: str | Path | None = None
     overwrite_output: bool = True
+
+    @classmethod
+    def from_legacy_yaml(
+        cls,
+        config_path: str | Path,
+        *,
+        backend: str = "numpy",
+        output_path: str | Path | None = None,
+        strict_core_contract: bool = True,
+        overwrite_output: bool = True,
+    ) -> "Simulation":
+        """Construct simulation object from a legacy YAML configuration."""
+        if strict_core_contract:
+            config = load_core_compatible_yaml(config_path)
+        else:
+            config = load_legacy_yaml(config_path)
+        return cls(
+            backend=backend,
+            config=config,
+            output_path=output_path,
+            overwrite_output=overwrite_output,
+        )
 
     def array_namespace(self):
         """Return backend array namespace (numpy/cupy)."""

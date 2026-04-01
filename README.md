@@ -145,7 +145,8 @@ pip install -e .[cuda]
   - root metadata writer + unit tests.
 - Simulation integration scaffold:
   - `Simulation.run()` can now initialize a legacy-layout HDF5 output file,
-  - backend and run metadata are written at file root.
+  - backend and run metadata are written at file root,
+  - `Simulation.from_legacy_yaml(...)` loads validated legacy configs directly.
 - Automated tests currently pass on CPU-only environment.
 - Validation tooling:
   - `scripts/validate_legacy_config.py` validates legacy YAML files against the core compatibility contract.
