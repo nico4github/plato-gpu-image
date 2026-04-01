@@ -140,6 +140,9 @@ pip install -e .[cuda]
 - Benchmarks scaffold implemented:
   - `benchmarks/run_backend_benchmarks.py` runs local NumPy FFT smoke benchmarks now,
   - same CLI path reserved for future CuPy benchmarking on GPU hosts.
+- HDF5 output scaffold implemented:
+  - legacy group creation helper in `src/platosim_py/io/hdf5.py`,
+  - root metadata writer + unit tests.
 - Automated tests currently pass on CPU-only environment.
 
 ## Deferred GPU Validation Checklist
