@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 from platosim_py.backends import backend_array_namespace, resolve_backend
+from platosim_py.io.hdf5 import HDF5Writer
 
 DEFAULT_EFFECT_ORDER: tuple[str, ...] = (
     "reset",
@@ -26,6 +28,8 @@ class Simulation:
 
     backend: str = "numpy"
     config: dict[str, Any] | None = None
+    output_path: str | Path | None = None
+    overwrite_output: bool = True
 
     def array_namespace(self):
         """Return backend array namespace (numpy/cupy)."""
@@ -42,8 +46,23 @@ class Simulation:
         full exposure pipeline runner.
         """
         backend_module = resolve_backend(self.backend)
+        output_file = None
+        if self.output_path is not None:
+            writer = HDF5Writer(self.output_path)
+            writer.initialize_file(overwrite=self.overwrite_output)
+            writer.ensure_legacy_groups()
+            writer.write_root_metadata(
+                {
+                    "simulator": "plato-gpu-image",
+                    "backend": backend_module.name(),
+                    "status": "initialized",
+                }
+            )
+            output_file = str(Path(self.output_path))
+
         return {
             "status": "ok",
             "backend": backend_module.name(),
             "planned_effect_order": list(self.planned_effect_order()),
+            "output_file": output_file,
         }

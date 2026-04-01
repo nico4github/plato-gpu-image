@@ -143,6 +143,9 @@ pip install -e .[cuda]
 - HDF5 output scaffold implemented:
   - legacy group creation helper in `src/platosim_py/io/hdf5.py`,
   - root metadata writer + unit tests.
+- Simulation integration scaffold:
+  - `Simulation.run()` can now initialize a legacy-layout HDF5 output file,
+  - backend and run metadata are written at file root.
 - Automated tests currently pass on CPU-only environment.
 
 ## Deferred GPU Validation Checklist
