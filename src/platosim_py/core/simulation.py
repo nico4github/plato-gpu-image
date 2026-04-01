@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from platosim_py.backends import backend_array_namespace, resolve_backend
+
 
 @dataclass(slots=True)
 class Simulation:
@@ -11,9 +13,15 @@ class Simulation:
 
     backend: str = "numpy"
 
-    def run(self) -> None:
+    def array_namespace(self):
+        """Return backend array namespace (numpy/cupy)."""
+        return backend_array_namespace(self.backend)
+
+    def run(self) -> dict[str, str]:
         """Run the simulation.
 
-        This method is intentionally a placeholder for phased implementation.
+        Returns a run-status payload for now; this method will evolve into the
+        full exposure pipeline runner.
         """
-        return None
+        backend_module = resolve_backend(self.backend)
+        return {"status": "ok", "backend": backend_module.name()}

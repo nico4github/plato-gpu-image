@@ -123,9 +123,24 @@ pip install -e .[cuda]
 
 ## Next Implementation Milestones
 
-- Implement strict + compatibility YAML parser in `config/compatibility.py`.
-- Implement backend protocol and default NumPy backend.
-- Add parity test harness that runs legacy configs and compares key outputs.
+- Lock a v1 compatibility schema contract (required path inventory + defaults policy).
+- Implement core effect ordering in `Simulation.run()` for one minimal exposure path.
+- Add HDF5 output compatibility skeleton for legacy group/dataset naming.
+- Expand parity tests with real fixture comparisons against selected PlatoSim3 runs.
+
+## Current Foundation Status
+
+- Compatibility loader implemented with:
+  - required top-level section checks,
+  - legacy alias normalization (`RApointing`/`DecPointing`),
+  - slash-path utilities for schema and validation checks.
+- Backend framework implemented:
+  - backend resolver (`numpy`/`cupy`),
+  - simulation skeleton now resolves backend and reports runtime selection.
+- Benchmarks scaffold implemented:
+  - `benchmarks/run_backend_benchmarks.py` runs local NumPy FFT smoke benchmarks now,
+  - same CLI path reserved for future CuPy benchmarking on GPU hosts.
+- Automated tests currently pass on CPU-only environment.
 
 ## Deferred GPU Validation Checklist
 
