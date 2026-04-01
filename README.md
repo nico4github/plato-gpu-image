@@ -150,6 +150,7 @@ pip install -e .[cuda]
 - Automated tests currently pass on CPU-only environment.
 - Validation tooling:
   - `scripts/validate_legacy_config.py` validates legacy YAML files against the core compatibility contract.
+  - `scripts/compare_hdf5_structure.py` compares group/dataset structure between two HDF5 files.
 - Optional legacy parity runner:
   - `tests/parity/test_legacy_binary_runner.py` can execute the local `PlatoSim3/build/platosim` binary,
   - `tests/parity/test_structure_parity.py` compares baseline HDF5 group overlap between legacy and Python outputs,
