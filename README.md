@@ -186,6 +186,11 @@ pip install -e .[cuda]
   - `tests/parity/test_legacy_binary_runner.py` can execute the local `PlatoSim3/build/platosim` binary,
   - `tests/parity/test_structure_parity.py` compares baseline HDF5 group overlap between legacy and Python outputs,
   - enable with `RUN_LEGACY_PARITY=1` for integration-level checks.
+- Performance benchmark test:
+  - `tests/perf/test_perf_legacy_vs_local.py` measures legacy vs local runtime on a lightweight shared config.
+  - included in pytest by default when legacy binary is available (set `RUN_LEGACY_PERF=0` to disable).
+  - writes `tests/output_file/local__perf_report.json`.
+  - pytest terminal summary shows `legacy_seconds`, `local_seconds`, and `local/legacy speedup`.
 
 Quick side-by-side preview example:
 
