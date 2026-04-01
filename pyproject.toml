@@ -39,7 +39,7 @@ dev = [
 Repository = "https://github.com/nico4github/plato-gpu-image"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/platosim_py"]
+packages = ["src/backends", "src/config", "src/core", "src/models", "src/simio"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]

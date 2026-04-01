@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from platosim_py.config.compatibility import (
+from config.compatibility import (
     CORE_REQUIRED_PATHS,
     ConfigCompatibilityError,
     flatten_paths,

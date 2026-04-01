@@ -20,12 +20,12 @@ This project is intentionally separated from the existing `PlatoSim3` repository
 
 ### 1. Architecture
 
-Implement a modular simulation engine under `src/platosim_py`:
+Implement a modular simulation engine directly under `src/`:
 - `config`: input parsing, schema normalization, validation, legacy key support.
 - `core`: simulation orchestration (`run`, exposure scheduling, effect ordering).
 - `models`: physical models (platform, camera, detector, PSF, noise/effects).
 - `backends`: array abstraction and backend-specific ops (`numpy`, `cupy`).
-- `io`: HDF5 read/write compatibility with legacy output structure.
+- `simio`: HDF5 read/write compatibility with legacy output structure.
 
 ### 2. Compatibility (Non-Negotiable)
 
@@ -81,23 +81,21 @@ plato-gpu-image/
 ├── docs/
 ├── scripts/
 ├── src/
-│   └── platosim_py/
-│       ├── __init__.py
-│       ├── backends/
-│       │   ├── __init__.py
-│       │   ├── numpy_backend.py
-│       │   └── cupy_backend.py
-│       ├── config/
-│       │   ├── __init__.py
-│       │   └── compatibility.py
-│       ├── core/
-│       │   ├── __init__.py
-│       │   └── simulation.py
-│       ├── io/
-│       │   ├── __init__.py
-│       │   └── hdf5.py
-│       └── models/
-│           └── __init__.py
+│   ├── backends/
+│   │   ├── __init__.py
+│   │   ├── numpy_backend.py
+│   │   └── cupy_backend.py
+│   ├── config/
+│   │   ├── __init__.py
+│   │   └── compatibility.py
+│   ├── core/
+│   │   ├── __init__.py
+│   │   └── simulation.py
+│   ├── simio/
+│   │   ├── __init__.py
+│   │   └── hdf5.py
+│   └── models/
+│       └── __init__.py
 └── tests/
     ├── parity/
     │   └── test_input_compatibility.py
@@ -141,7 +139,7 @@ pip install -e .[cuda]
   - `benchmarks/run_backend_benchmarks.py` runs local NumPy FFT smoke benchmarks now,
   - same CLI path reserved for future CuPy benchmarking on GPU hosts.
 - HDF5 output scaffold implemented:
-  - legacy group creation helper in `src/platosim_py/io/hdf5.py`,
+  - legacy group creation helper in `src/simio/hdf5.py`,
   - root metadata writer + unit tests.
 - Simulation integration scaffold:
   - `Simulation.run()` can now initialize a legacy-layout HDF5 output file,

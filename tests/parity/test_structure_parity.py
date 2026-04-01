@@ -8,8 +8,8 @@ import h5py
 import pytest
 import yaml
 
-from platosim_py.core.simulation import Simulation
-from platosim_py.io.hdf5 import LEGACY_OUTPUT_GROUPS
+from core.simulation import Simulation
+from simio.hdf5 import LEGACY_OUTPUT_GROUPS
 
 
 def _repo_root() -> Path:

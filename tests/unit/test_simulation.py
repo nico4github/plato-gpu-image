@@ -5,8 +5,8 @@ from pathlib import Path
 import h5py
 import pytest
 
-from platosim_py.config.compatibility import ConfigCompatibilityError
-from platosim_py.core.simulation import DEFAULT_EFFECT_ORDER, Simulation
+from config.compatibility import ConfigCompatibilityError
+from core.simulation import DEFAULT_EFFECT_ORDER, Simulation
 
 
 def test_simulation_run_returns_backend_status() -> None:

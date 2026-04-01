@@ -6,9 +6,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from platosim_py.backends import backend_array_namespace, resolve_backend
-from platosim_py.config.compatibility import load_core_compatible_yaml, load_legacy_yaml
-from platosim_py.io.hdf5 import HDF5Writer
+from backends import backend_array_namespace, resolve_backend
+from config.compatibility import load_core_compatible_yaml, load_legacy_yaml
+from simio.hdf5 import HDF5Writer
 
 DEFAULT_EFFECT_ORDER: tuple[str, ...] = (
     "reset",

@@ -5,7 +5,7 @@ from pathlib import Path
 import h5py
 import pytest
 
-from platosim_py.io.hdf5 import HDF5Writer, LEGACY_OUTPUT_GROUPS
+from simio.hdf5 import HDF5Writer, LEGACY_OUTPUT_GROUPS
 
 
 def test_initialize_file_and_reject_overwrite(tmp_path: Path) -> None:
@@ -38,4 +38,3 @@ def test_write_root_metadata(tmp_path: Path) -> None:
     with h5py.File(output, "r") as handle:
         assert handle.attrs["simulator"] == "plato-gpu-image"
         assert int(handle.attrs["version"]) == 1
-

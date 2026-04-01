@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from platosim_py.backends import cupy_backend, numpy_backend
-from platosim_py.backends.protocol import ArrayBackendModule
+from backends import cupy_backend, numpy_backend
+from backends.protocol import ArrayBackendModule
 
 SUPPORTED_BACKENDS: tuple[str, ...] = ("numpy", "cupy")
 
