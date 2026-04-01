@@ -193,8 +193,8 @@ pip install -e .[cuda]
   - included in pytest by default when legacy binary is available (set `RUN_LEGACY_PERF=0` to disable).
   - writes `tests/output_file/local__perf_report.json`.
   - generates visual previews:
-    - `tests/output_file/legacy__perf_preview.pgm`
-    - `tests/output_file/local__perf_preview.pgm`
+    - `tests/output_file/legacy__perf_preview.png`
+    - `tests/output_file/local__perf_preview.png`
   - pytest terminal summary shows `legacy_seconds`, `local_seconds`, and `local/legacy speedup`.
 
 Quick side-by-side preview example:

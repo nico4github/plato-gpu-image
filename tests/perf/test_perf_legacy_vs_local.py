@@ -4,6 +4,8 @@ import json
 import os
 import subprocess
 import time
+import zlib
+import struct
 from pathlib import Path
 
 import h5py
@@ -43,8 +45,8 @@ def _prepare_perf_config() -> Path:
     return config_path
 
 
-def _write_pgm_preview(
-    hdf5_path: Path, dataset_path: str, output_pgm: Path, *, percentile: float = 99.5
+def _write_preview_png(
+    hdf5_path: Path, dataset_path: str, output_png: Path, *, percentile: float = 99.5
 ) -> None:
     with h5py.File(hdf5_path, "r") as handle:
         if dataset_path not in handle:
@@ -63,11 +65,30 @@ def _write_pgm_preview(
         clipped = np.clip(image, lo, hi)
         scaled = ((clipped - lo) / (hi - lo) * 255.0).astype(np.uint8)
 
-    output_pgm.parent.mkdir(parents=True, exist_ok=True)
-    with output_pgm.open("wb") as handle:
-        header = f"P5\n{scaled.shape[1]} {scaled.shape[0]}\n255\n"
-        handle.write(header.encode("ascii"))
-        handle.write(scaled.tobytes())
+    output_png.parent.mkdir(parents=True, exist_ok=True)
+    _write_grayscale_png(output_png, scaled)
+
+
+def _write_grayscale_png(path: Path, image: np.ndarray) -> None:
+    """Write an 8-bit grayscale PNG using stdlib only."""
+    if image.ndim != 2:
+        raise ValueError(f"PNG writer expects 2D array, got {image.shape}")
+    height, width = image.shape
+    raw_rows = b"".join(b"\x00" + image[row].tobytes() for row in range(height))
+    compressed = zlib.compress(raw_rows, level=9)
+
+    def chunk(tag: bytes, data: bytes) -> bytes:
+        return (
+            struct.pack(">I", len(data))
+            + tag
+            + data
+            + struct.pack(">I", zlib.crc32(tag + data) & 0xFFFFFFFF)
+        )
+
+    signature = b"\x89PNG\r\n\x1a\n"
+    ihdr = struct.pack(">IIBBBBB", width, height, 8, 0, 0, 0, 0)  # grayscale
+    png_bytes = signature + chunk(b"IHDR", ihdr) + chunk(b"IDAT", compressed) + chunk(b"IEND", b"")
+    path.write_bytes(png_bytes)
 
 
 @pytest.mark.skipif(
@@ -84,8 +105,8 @@ def test_perf_legacy_vs_local_smoke() -> None:
     legacy_log = tagged_output_file("legacy", "perf_smoke.log")
     local_output = tagged_output_file("local", "perf_smoke.hdf5")
     report_path = tagged_output_file("local", "perf_report.json")
-    legacy_preview = tagged_output_file("legacy", "perf_preview.pgm")
-    local_preview = tagged_output_file("local", "perf_preview.pgm")
+    legacy_preview = tagged_output_file("legacy", "perf_preview.png")
+    local_preview = tagged_output_file("local", "perf_preview.png")
 
     for artifact in (legacy_output, legacy_log, local_output, report_path, legacy_preview, local_preview):
         if artifact.exists():
@@ -119,8 +140,8 @@ def test_perf_legacy_vs_local_smoke() -> None:
     assert legacy_output.exists()
     assert local_output.exists()
 
-    _write_pgm_preview(legacy_output, "/Images/image0000000", legacy_preview)
-    _write_pgm_preview(local_output, "/Images/image0000000", local_preview)
+    _write_preview_png(legacy_output, "/Images/image0000000", legacy_preview)
+    _write_preview_png(local_output, "/Images/image0000000", local_preview)
 
     speedup_local_over_legacy = (
         (legacy_seconds / local_seconds) if local_seconds > 0 else float("inf")

@@ -37,6 +37,26 @@ If behavior cannot be matched exactly, document the delta and add a failing pari
 - CPU path works without CUDA dependencies installed.
 - Documentation updated in `README.md` or `docs/`.
 
+## Test Data And Output Rules
+
+- Keep YAML config fixtures in `tests/input_yaml/`.
+- Keep star/catalog and other non-YAML input fixtures in `tests/input_file/`.
+- Generated test artifacts must go to `tests/output_file/` (never repo root or `tests/` directly).
+- Use tagged filenames for generated artifacts:
+  - `legacy__*` for outputs from the legacy C++ binary.
+  - `local__*` for outputs from this Python implementation.
+- Do not commit generated artifact files (`.hdf5`, `.log`, `.png`, perf reports); keep only fixture inputs and `.gitkeep` placeholders.
+
+## Performance And Preview Rules
+
+- Maintain a perf comparison test between legacy and local implementations.
+- Ensure pytest terminal summary exposes perf metrics clearly:
+  - `legacy_seconds`
+  - `local_seconds`
+  - `local/legacy speedup`
+- Keep preview image artifacts for quick visual comparison in `tests/output_file/` with tagged names.
+- Keep and maintain script-based inspection tools for HDF5 comparison/preview workflows.
+
 ## Suggested Work Order
 
 1. Config parser and compatibility normalization.
