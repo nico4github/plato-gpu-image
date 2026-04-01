@@ -3,13 +3,13 @@ requires = ["hatchling>=1.25"]
 build-backend = "hatchling.build"
 
 [project]
-name = "platosim-py-gpu"
+name = "plato-gpu-image"
 version = "0.1.0"
-description = "Pure-Python PlatoSim engine with optional CUDA backend and full legacy input compatibility"
+description = "Pure-Python PLATO image simulation engine with optional CUDA backend and full legacy input compatibility"
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [
-  { name = "PlatoSim Pure Python Team" }
+  { name = "plato-gpu-image Team" }
 ]
 license = { text = "MIT" }
 dependencies = [
@@ -36,7 +36,7 @@ dev = [
 ]
 
 [project.urls]
-Repository = "https://example.invalid/platosim_py_gpu"
+Repository = "https://github.com/nico4github/plato-gpu-image"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/platosim_py"]

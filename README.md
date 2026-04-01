@@ -1,4 +1,4 @@
-# PlatoSim Pure Python GPU
+# plato-gpu-image
 
 Standalone repository for a pure-Python implementation of PlatoSim with optional GPU acceleration.
 
@@ -72,7 +72,7 @@ Validation gates:
 ## Initial Folder Tree
 
 ```text
-platosim_py_gpu/
+plato-gpu-image/
 ├── AGENTS.md
 ├── README.md
 ├── pyproject.toml
@@ -109,7 +109,7 @@ platosim_py_gpu/
 
 ```bash
 git clone <this-repo-url>
-cd platosim_py_gpu
+cd plato-gpu-image
 python -m venv .venv
 source .venv/bin/activate
 pip install -e .[dev]
